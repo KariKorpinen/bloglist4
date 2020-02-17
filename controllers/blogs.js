@@ -22,10 +22,7 @@ blogsRouter.get('/:id', (request, response, next) => {
 blogsRouter.post('/', (request, response, next) => {
   const body = request.body
   const blog = new Blog({
-    //content: body.content,
-    //important: body.important || false,
-    //date: new Date(),
-
+    
     title: body.title,
     author: body.author,
     url: body.url,
@@ -50,9 +47,7 @@ blogsRouter.delete('/:id', (request, response, next) => {
 blogsRouter.put('/:id', (request, response, next) => {
   const body = request.body
   const blog = {
-    //content: body.content,
-    //important: body.important,
-
+    
     title: body.title,
     author: body.author,
     url: body.url,
