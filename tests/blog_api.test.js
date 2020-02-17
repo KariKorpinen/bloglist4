@@ -25,35 +25,15 @@ test('all blogs are returned', async () => {
 })
 test('is id defined', async () => {
   const response = await api.get('/api/blogs')
-  //console.log("all blogs ", response.body)
-  console.log("body id", response.body[0].id)
-  //Blog.find({}).then(blogs => {
-    //response.json(blogs.map(blog => blog.toJSON()))})
-    //console.log("body id 2", response)
-
-  //expect(response.body.length).toBe(helper.initialBlogs.length)
+  //console.log("body id", response.body[0].id)
   expect(response.body[0].id).toBeDefined()
 })
-/*
-test('a specific blog is within the returned blogs', async () => {
-  const response = await api.get('/api/blogs')
-/////////////////////////////////////////
-  const contents = response.body.map(r => r.content)
-  expect(contents).toContain(
-    'Browser can execute only Javascript'
-  )/////////////////////////////////////7
-})
-*/
 test('a valid blog can be added ', async () => {
   const newBlog = {
-    ///////////////////////////////7
     title: "TDD harms architecture part 2", 
     author: "Robert C. Martin", 
     url: "http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html", 
     likes: 2
-    //content: 'async/await simplifies making async calls',
-    //important: true,
-    /////////////////////////////7777
   }
 
   await api
@@ -64,22 +44,18 @@ test('a valid blog can be added ', async () => {
 
   const blogsAtEnd = await helper.blogsInDb()
   expect(blogsAtEnd.length).toBe(helper.initialBlogs.length + 1)
-///////////////////////////
+
   const titles = blogsAtEnd.map(n => n.title)
   expect(titles).toContain(
     'TDD harms architecture part 2'
-  )////////////////////////7
+  )
 })
 test('if likes value is empty, it get 0 to its value ', async () => {
   const newBlog = {
-    ///////////////////////////////7
+    
     title: "TDD harms architecture part 3", 
     author: "Robert C. Martin", 
     url: "http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html" 
-    //likes: 2
-    //content: 'async/await simplifies making async calls',
-    //important: true,
-    /////////////////////////////7777
   }
 
   await api
@@ -90,17 +66,14 @@ test('if likes value is empty, it get 0 to its value ', async () => {
 
   const blogsAtEnd = await helper.blogsInDb()
   expect(blogsAtEnd.length).toBe(helper.initialBlogs.length + 1)
-///////////////////////////
   const likes = blogsAtEnd.map(n => n.likes)
   expect(likes).toContain(0)
 })
 
 test('blog without title and url is not added', async () => {
   const newBlog = {
-    /////////////////////////////////////////777
     author: "Robert C. Martin", 
     likes: 5
-    //////////////////////////////////////77
   }
 
   await api
@@ -112,20 +85,6 @@ test('blog without title and url is not added', async () => {
 
   expect(blogsAtEnd.length).toBe(helper.initialBlogs.length)
 })
-/*
-test('a specific blog can be viewed', async () => {
-  const blogsAtStart = await helper.blogsInDb()
-
-  const blogToView = blogsAtStart[0]
-
-  const resultBlog = await api
-    .get(`/api/blogs/${blogToView.id}`)
-    .expect(200)
-    .expect('Content-Type', /application\/json/)
-
-  expect(resultBlog.body).toEqual(blogToView)
-})
-
 test('a blog can be deleted', async () => {
   const blogsAtStart = await helper.blogsInDb()
   const blogToDelete = blogsAtStart[0]
@@ -139,13 +98,12 @@ test('a blog can be deleted', async () => {
   expect(blogsAtEnd.length).toBe(
     helper.initialBlogs.length - 1
   )
-///////////////////////////////////////7
-  const contents = notesAtEnd.map(r => r.content)
+  const titles = blogsAtEnd.map(r => r.title)
 
-  expect(contents).not.toContain(noteToDelete.content)
-  //////////////////////////////////////////
+  expect(titles).not.toContain(blogToDelete.title)
+
 })
-*/
+
 afterAll(() => {
   mongoose.connection.close()
 })
