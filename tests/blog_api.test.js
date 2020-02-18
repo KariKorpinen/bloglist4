@@ -5,10 +5,12 @@ const app = require('../app')
 const api = supertest(app)
 
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 beforeEach(async () => {
   await Blog.deleteMany({})
   await Blog.insertMany(helper.initialBlogs)
+  
 })
 
 test('blogs are returned as json', async () => {
@@ -20,12 +22,10 @@ test('blogs are returned as json', async () => {
 
 test('all blogs are returned', async () => {
   const response = await api.get('/api/blogs')
-  //console.log("all blogs ", response.body)
   expect(response.body.length).toBe(helper.initialBlogs.length)
 })
 test('is id defined', async () => {
   const response = await api.get('/api/blogs')
-  //console.log("body id", response.body[0].id)
   expect(response.body[0].id).toBeDefined()
 })
 test('a valid blog can be added ', async () => {
@@ -104,6 +104,92 @@ test('a blog can be deleted', async () => {
 
 })
 
+test('blog title can update using PUT', async () => {
+  const blogsAtStart = await helper.blogsInDb()
+  const blogToUpdate = blogsAtStart[0]
+
+  const updateBlog = {
+    title: blogToUpdate.title, 
+    author: blogToUpdate.author, 
+    url: blogToUpdate.url, 
+    likes: 57
+  }
+  await api
+    .put(`/api/blogs/${blogToUpdate.id}`)
+    .send(updateBlog)
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+ 
+  const blogsAtEnd = await helper.blogsInDb()
+
+  expect(blogsAtEnd.length).toBe(helper.initialBlogs.length)
+  const likes = blogsAtEnd.map(r => r.likes)
+
+  expect(likes).toContain(57)
+})
+
+ describe('user tests', () => {
+    beforeEach(async () => {
+      await User.deleteMany({})
+      const user = new User({ username: 'root', password: 'sekret' })
+      await user.save()
+    })
+
+    test('creation succeeds with a fresh username', async () => {
+      const usersAtStart = await helper.usersInDb()
+
+      const newUser = {
+        username: 'mluukkai',
+        name: 'Matti Luukkainen',
+        password: 'salainen',
+      }
+
+      await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+      const usersAtEnd = await helper.usersInDb()
+      expect(usersAtEnd.length).toBe(usersAtStart.length + 1)
+
+      const usernames = usersAtEnd.map(u => u.username)
+      expect(usernames).toContain(newUser.username)
+    })
+
+    test('creation fails with proper statuscode and message if username already taken', async () => {
+      const usersAtStart = await helper.usersInDb()
+
+      const newUser = {
+        username: 'root',
+        name: 'Superuser',
+        password: 'salainen',
+      }
+
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      expect(result.body.error).toContain('`username` to be unique')
+
+      const usersAtEnd = await helper.usersInDb()
+      expect(usersAtEnd.length).toBe(usersAtStart.length)
+    })
+    test('there should be 3 users', async () => {
+       await User.deleteMany({})
+       const user1 = new User({ username: 'root1', name: 'root1', password: 'sekret1' })
+       await user1.save()
+       const user2 = new User({ username: 'root2', name: 'root2', password: 'sekret2' })
+       await user2.save()
+       const user3 = new User({ username: 'root3', name: 'root3', password: 'sekret3' })
+       await user3.save()
+
+       const response = await api.get('/api/users')
+       expect(response.body.length).toBe(3)
+    })
+  }) 
 afterAll(() => {
   mongoose.connection.close()
 })
